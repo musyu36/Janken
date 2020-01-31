@@ -6,8 +6,8 @@ import kotlinx.android.synthetic.main.activity_result.*
 
 class ResultActivity : AppCompatActivity() {
     val gu = 0
-    val choki = 0
-    val pa = 0
+    val choki = 1
+    val pa = 2
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
