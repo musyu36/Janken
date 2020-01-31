@@ -36,7 +36,7 @@ class ResultActivity : AppCompatActivity() {
         }
 
         //コンピュータの手を決める
-        val comHand = (Math.random() * 3).toInt()
+        val comHand = getHand()
         when(comHand){
             gu -> comHandImage.setImageResource(R.drawable.com_gu)
             choki -> comHandImage.setImageResource(R.drawable.com_choki)
@@ -50,7 +50,12 @@ class ResultActivity : AppCompatActivity() {
             1 -> resultLabel.setText(R.string.result_win)
             2 -> resultLabel.setText(R.string.result_lose)
         }
+
+        //戻るボタン
         backButton.setOnClickListener{finish()}
+
+        //結果保存
+        saveData(myHand, comHand, gameResult)
     }
 
     private fun saveData(myHand: Int, comHand: Int, gameResult: Int){
@@ -60,9 +65,6 @@ class ResultActivity : AppCompatActivity() {
         val winningStreakCount = pref.getInt("WINNING_STREAK_COUNT", 0)
         val lastComHand = pref.getInt("LAST_COM_HAND", 0)
         val lastGameResult = pref.getInt("GAME_RESULT", -1)
-
-
-        
 
         val edtWinningStreakCount: Int =
             when{
@@ -81,5 +83,36 @@ class ResultActivity : AppCompatActivity() {
             .putInt("BEFORE_LAST_COM_HAND", lastComHand)
             .putInt("GAME_RESULT", gameResult)
             .apply() //putだけでは保存されない
+    }
+
+    private fun getHand(): Int {
+        var hand = (Math.random() * 3).toInt()
+        val pref = PreferenceManager.getDefaultSharedPreferences(this)
+        val gameCount = pref.getInt("GAME_COUNT", 0)
+        val winningStreakCount = pref.getInt("WINNING_STREAK_COUNT", 0)
+        val lastMyHand = pref.getInt("LAST_MY_HAND", 0)
+        val lastComHand = pref.getInt("LAST_COM_HAND", 0)
+        val beforeLastComHand = pref.getInt("BEFORE_LAST_COM_HAND", 0)
+        val gameResult = pref.getInt("GAME_RESULT", -1)
+
+        if(gameCount == 1){
+            if(gameResult == 2){
+                //前回の勝負が1回目でCPが勝った場合、コンピュータは次に出手を変える
+                while(lastComHand == hand){
+                    hand = (Math.random() * 3).toInt()
+                }
+            }else if(gameResult == 1){
+                //前回の勝負が1回目でコンピュータが負けた場合、相手の出した手に勝つ手を出す
+                hand = (lastMyHand - 1 + 3) % 3
+            }
+        }else if(winningStreakCount > 0){
+            if(beforeLastComHand == lastComHand){
+                //同じ手で連勝した場合は手を変える
+                while(lastComHand == hand){
+                    hand = (Math.random() * 3).toInt()
+                }
+            }
+        }
+        return hand
     }
 }
